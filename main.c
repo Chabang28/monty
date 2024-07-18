@@ -1,65 +1,49 @@
 #include "monty.h"
-void bnp(void);
+#include <stdio.h>
 
+bus_t bus = {NULL, NULL, NULL, 0};
 /**
-* main - This is the entry point for the Monty ByteCodes interpreter
-* @argc: Number of command-line arguments
-* @argv: Array of command-line arguments
-*
-* Return: 0 on success, EXIT_FAILURE on error
+* main - This is the monty code interpreter function
+* @argc: The total number of arguments
+* @argv: The monty file location
+* written by Damiel Mayowa || Moses Iluyemi
+* Return: 0 on success and -1 if failed
 */
-
 int main(int argc, char *argv[])
 {
-	char *cunt_instru;
-	stack_t *stack;
-	char *current_line = NULL;
-	size_t line_length = 0;
-	unsigned int cunt_line_num = 0;
-	FILE *source_file;
+	char *contents;
+	FILE *files;
+	size_t sizes = 0;
+	ssize_t read_lines = 1;
+	stack_t *stacks = NULL;
+	unsigned int counters = 0;
 
 	if (argc != 2)
 	{
 		fprintf(stderr, "USAGE: monty file\n");
 		exit(EXIT_FAILURE);
 	}
-
-	source_file = fopen(argv[1], "r");
-	if (source_file == NULL)
+	files = fopen(argv[1], "r");
+	bus.file = files;
+	if (!files)
 	{
 		fprintf(stderr, "Error: Can't open file %s\n", argv[1]);
 		exit(EXIT_FAILURE);
 	}
-	/*Read each line from the source file*/
-	while (bnp_getline(&current_line, &line_length, source_file) != -1)
+	while (read_lines > 0)
 	{
-	cunt_line_num++;
-	/*Extract the current instruction from the line*/
-	cunt_instru = strtok(current_line, " \t\n");
+		contents = NULL;
+		read_lines = getline(&contents, &sizes, files);
+		bus.content = contents;
+		counters++;
+		if (read_lines > 0)
+		{
+			execute(contents, &stacks, counters, files);
+		}
+		free(contents);
+	}
+	free_stack(stacks);
+	fclose(files);
 
-	if (cunt_instru == NULL || cunt_instru[0] == '#')
-		continue;
-	/*Check and execute the corresponding instruction*/
-	if (strcmp(cunt_instru, "push") == 0)
-	{
-		bnp_push(&stack, cunt_line_num);
-	}
-	else if (strcmp(cunt_instru, "pall") == 0)
-	{
-		bnp_pall(&stack);
-	}
-	else if (strcmp(cunt_instru, "pint") == 0)
-	{
-		bnp_pint(&stack, cunt_line_num);
-	}
-	else
-	{
-		fprintf(stderr, "L%u: unknown instruction %s\n", cunt_line_num, cunt_instru);
-		exit(EXIT_FAILURE);
-	}
-	}
-
-	fclose(source_file);
-	free(current_line);
 	return (0);
 }
